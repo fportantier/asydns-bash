@@ -19,3 +19,9 @@ Video
 =====
 
 https://www.youtube.com/watch?v=zdZfc7E1VIc
+
+Technical Details
+=================
+
+You can read the technical details about AsyDNS protocol on https://github.com/portantier/asydns
+
