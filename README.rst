@@ -15,8 +15,8 @@ The only requirements are curl and openssl.
         -r        Revoke an RSA key pair (irreversible action!)
         -h        Show this help
 
-Video
-=====
+Usage Demo Video
+================
 
 https://www.youtube.com/watch?v=zdZfc7E1VIc
 
