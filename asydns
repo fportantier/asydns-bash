@@ -4,10 +4,19 @@
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
 url="https://asydns.org"
-domain="a.asydns.org"
 generate=0
 method="POST"
 out="/dev/null"
+
+function show_help {
+    echo "Usage: $0"
+    echo "    -v        Verbose mode"
+    echo "    -g        Force the generation of RSA key pair (overwrite existing)"
+    echo "    -u URL    Make the requests against this URL (default: $url)"
+    echo "    -r        Revoke an RSA key pair (irreversible action!)"
+    echo "    -h        Show this help"
+}
+
 
 while getopts "hgu:d:rv" opt; do
     case "$opt" in
@@ -18,8 +27,6 @@ while getopts "hgu:d:rv" opt; do
     g)  generate=1
         ;;
     u)  url=$OPTARG
-        ;;
-    d)  domain=$OPTARG
         ;;
     r)  method="DELETE"
         ;;
