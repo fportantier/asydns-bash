@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# A POSIX variable
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+
+url="https://asydns.org"
+domain="a.asydns.org"
+generate=0
+method="POST"
+out="/dev/null"
+
+while getopts "hgu:d:rv" opt; do
+    case "$opt" in
+    h)
+        show_help
+        exit 0
+        ;;
+    g)  generate=1
+        ;;
+    u)  url=$OPTARG
+        ;;
+    d)  domain=$OPTARG
+        ;;
+    r)  method="DELETE"
+        ;;
+    v)  out="/dev/stdout"
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ "$1" = "--" ] && shift
+
+mkdir -p ~/.asydns
+
+if [ ! -f ~/.asydns/rsa.key ] || [ $generate -eq 1 ]
+then
+    echo Generating RSA key pair ... > $out
+    openssl genrsa -out ~/.asydns/rsa.key 2048 2> /dev/null
+    openssl rsa -pubout -in ~/.asydns/rsa.key -out ~/.asydns/rsa.pub 2> /dev/null
+fi
+
+echo Obtaining challenge ... > $out
+challenge=$(curl -sS $url/api/ | grep -Po 'challenge": "\K[a-zA-Z0-9/+=]+')
+
+signature="$(echo $challenge | base64 -d | openssl sha224 -sign ~/.asydns/rsa.key | openssl base64)"
+
+pub=$(cat ~/.asydns/rsa.pub | sed s/$/'\\n'/g | tr -d "\n")
+
+echo Sending $method request to $url/api ... > $out
+cat << EOF | curl -sS -H "Content-Type: application/json" -X $method -d @- $url/api 
+{
+  "challenge" : "$challenge",
+  "response" : "$signature",
+  "pub": "$pub"
+}
+EOF
+
+echo ""
+
